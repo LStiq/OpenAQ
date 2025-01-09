@@ -13,6 +13,9 @@ DB_NAME = os.getenv("DB_NAME")
 AQ_KEY = os.getenv("AQ_KEY")
 API_BASE_URL = "https://api.openaq.org/v3/"
 
+# GOUV API
+API_GOUV_FR = "https://geo.api.gouv.fr/communes"
+
 # Chemins des environnements
 JAVA_HOME = os.getenv("JAVA_HOME")
 HADOOP_HOME = os.getenv("HADOOP_HOME")
