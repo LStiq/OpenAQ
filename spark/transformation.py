@@ -105,7 +105,7 @@ def transform_cities_points(cities_df: DataFrame) -> DataFrame:
         col("longitude"),
         col("nom").alias("city_name"),
         col("code").alias("city_insee_code"),
-        col("codePostaux")[0].alias("city_postcode")
+        col("codesPostaux")[0].alias("city_postcode")
     )
     return cleaned_df
 

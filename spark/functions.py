@@ -62,12 +62,12 @@ def chunk_list(data_list, chunk_size):
     for i in range(0, len(data_list), chunk_size):
         yield data_list[i:i + chunk_size]
 
-def get_communes(lon,lat):
-    response = requests.get(f"{API_GOUV_FR}?lon={lon}&lat={lat}", verify=False)
+def get_communes(lat, lon):
+    response = requests.get(f"{API_GOUV_FR}?lat={lat}&lon={lon}", verify=False)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch cities data from gouv api : {response.status_code}, {response.text}")
     city = response.json()
     if not city:
-        print(f"Aucune commune trouvée pour ({lon}, {lat})")
+        print(f"Aucune commune trouvée pour ({lat}, {lon})")
         return {}
     return city[0]

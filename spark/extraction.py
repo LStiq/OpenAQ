@@ -113,7 +113,7 @@ cities_schema = StructType([
     StructField("latitude", FloatType(), True),
     StructField("nom", StringType(), True),
     StructField("code", StringType(), True),
-    StructField("codePostaux", ArrayType(StringType()), True)
+    StructField("codesPostaux", ArrayType(StringType()), True)
 ])
 
 def extract_parameters_df(spark: SparkSession):
@@ -173,24 +173,23 @@ def extract_world_locations_df(spark: SparkSession):
 def extract_cities_locations_df(spark: SparkSession, points_list):
     cities_list = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        futures = []
+        future_to_row = {}
         for index, row in enumerate(points_list):
             location_id = row["location_id"]
-            lon = row["city_longitude"]
             lat = row["city_latitude"]
-            futures.append(executor.submit(get_communes,lon,lat))
+            lon = row["city_longitude"]
+            future = executor.submit(get_communes,lat,lon)
+            future_to_row[future] = row 
             if (index + 1) % 10 == 0: ## 10 REQUÊTES MAX PAR SECONDE
                 time.sleep(1)
 
-        for future, row in zip(concurrent.futures.as_completed(futures), points_list):
+        for future in concurrent.futures.as_completed(future_to_row):
             properties = future.result()
-            location_id = row["location_id"]
-            longitude = row["city_longitude"]
-            latitude = row ["city_latitude"]
+            row = future_to_row[future]
             cities_list.append({
-                "location_id": location_id,
-                "longitude": longitude,
-                "latitude": latitude,
+                "location_id": row["location_id"],
+                "latitude": row["city_latitude"],
+                "longitude": row["city_longitude"],
                 **properties
             })
     cities_rdd = spark.sparkContext.parallelize([json.dumps(c) for c in cities_list])
