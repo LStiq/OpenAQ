@@ -113,7 +113,8 @@ cities_schema = StructType([
     StructField("latitude", FloatType(), True),
     StructField("nom", StringType(), True),
     StructField("code", StringType(), True),
-    StructField("codesPostaux", ArrayType(StringType()), True)
+    StructField("codesPostaux", ArrayType(StringType()), True),
+    StructField("population", IntegerType(),True)
 ])
 
 def extract_parameters_df(spark: SparkSession):
@@ -175,7 +176,6 @@ def extract_cities_locations_df(spark: SparkSession, points_list):
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_row = {}
         for index, row in enumerate(points_list):
-            location_id = row["location_id"]
             lat = row["city_latitude"]
             lon = row["city_longitude"]
             future = executor.submit(get_communes,lat,lon)
