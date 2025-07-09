@@ -6,7 +6,7 @@ SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
 
 def scrap_standards():
     if not os.path.isdir('data_output'):
-        os.makedirs('data_output')
+        os.makedirs('data_output/normes')
     url = "https://www.ecologie.gouv.fr/sites/default/files/documents/01_Tableau-Normes-Seuils%20r%C3%A9glementaires.pdf"
     response = requests.get(url, verify=False)
     
