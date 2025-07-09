@@ -207,30 +207,30 @@ def extract_cities_locations_df(spark: SparkSession, points_list):
     return cities_df
 
 def extract_measurements_df(spark: SparkSession, sensors_ids):
-    # measurements_list = []
-    # MAX_REQUESTS_PER_MINUTE = 60 # L'API nous limite à 60 requêtes / min
-    # for chunk_index, sensors_chunk in enumerate(chunk_list(sensors_ids, MAX_REQUESTS_PER_MINUTE)):
-    #     print(f"--- Traitement du chunk {chunk_index + 1} contenant {len(sensors_chunk)} capteurs ---")
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-    #         # On lance la requête pour chaque sensor_id dans notre chunk
-    #         future_to_sensor = {
-    #             executor.submit(get_measurements,sensor_id): sensor_id
-    #             for sensor_id in sensors_chunk
-    #         }
-    #         # Quand chaque future est terminé, on récupère les résultats
-    #         for future in concurrent.futures.as_completed(future_to_sensor):
-    #             sensor_id = future_to_sensor[future]
-    #             try:
-    #                 measurements = future.result()
-    #                 # On stocke toutes les mesures récupérées
-    #                 for measurement in measurements:
-    #                     measurements_list.append({"sensor_id": sensor_id, **measurement})
-    #             except Exception as e:
-    #                 print(f"Erreur lors du traitement du capteur {sensor_id} : {e}")
-    #     # Si on a encore d'autres chunks à traiter, on dort 60s pour respecter 60 requêtes/min (sauf après le dernier chunk)
-    #     if (chunk_index + 1) * MAX_REQUESTS_PER_MINUTE < len(sensors_ids):
-    #         print(f"--- Limite atteinte, pause 60s avant le prochain chunk ---")
-    #         time.sleep(60)
+    measurements_list = []
+    MAX_REQUESTS_PER_MINUTE = 60 # L'API nous limite à 60 requêtes / min
+    for chunk_index, sensors_chunk in enumerate(chunk_list(sensors_ids, MAX_REQUESTS_PER_MINUTE)):
+        print(f"--- Traitement du chunk {chunk_index + 1} contenant {len(sensors_chunk)} capteurs ---")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            # On lance la requête pour chaque sensor_id dans notre chunk
+            future_to_sensor = {
+                executor.submit(get_measurements,sensor_id): sensor_id
+                for sensor_id in sensors_chunk
+            }
+            # Quand chaque future est terminé, on récupère les résultats
+            for future in concurrent.futures.as_completed(future_to_sensor):
+                sensor_id = future_to_sensor[future]
+                try:
+                    measurements = future.result()
+                    # On stocke toutes les mesures récupérées
+                    for measurement in measurements:
+                        measurements_list.append({"sensor_id": sensor_id, **measurement})
+                except Exception as e:
+                    print(f"Erreur lors du traitement du capteur {sensor_id} : {e}")
+        # Si on a encore d'autres chunks à traiter, on dort 60s pour respecter 60 requêtes/min (sauf après le dernier chunk)
+        if (chunk_index + 1) * MAX_REQUESTS_PER_MINUTE < len(sensors_ids):
+            print(f"--- Limite atteinte, pause 60s avant le prochain chunk ---")
+            time.sleep(60)
 
     measurements_list = get_measurements(sensors_ids)
     measurements_rdd = spark.sparkContext.parallelize([json.dumps(m) for m in measurements_list])
