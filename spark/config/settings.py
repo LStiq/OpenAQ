@@ -18,7 +18,6 @@ API_GOUV_FR = "https://geo.api.gouv.fr/communes"
 
 # Chemins des environnements
 JAVA_HOME = os.getenv("JAVA_HOME")
-HADOOP_HOME = os.getenv("HADOOP_HOME")
 SPARK_HOME = os.getenv("SPARK_HOME")
 PYSPARK_PYTHON = os.getenv("PYSPARK_PYTHON")
 
@@ -27,11 +26,9 @@ def configure_environment():
     Configure les variables d'environnement nécessaires pour Spark.
     """
     os.environ["JAVA_HOME"] = JAVA_HOME
-    os.environ["HADOOP_HOME"] = HADOOP_HOME
     os.environ["SPARK_HOME"] = SPARK_HOME
     os.environ["PYSPARK_PYTHON"] = PYSPARK_PYTHON
     os.environ["PATH"] += os.pathsep + os.path.join(SPARK_HOME, "bin")
-    os.environ["PATH"] += os.pathsep + os.path.join(HADOOP_HOME, "bin")
     print("Environnement Spark configuré avec succès.")
 
 def get_database_connection():

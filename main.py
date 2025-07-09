@@ -11,7 +11,6 @@ from spark.transformation import (
 from spark.scrap import get_polluants_data
 from spark.load import load_parquet
 from spark.config.settings import configure_environment
-import pandas as pd
 
 def main():
     # 1. Configuration et création de la session Spark
