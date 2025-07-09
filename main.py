@@ -145,8 +145,8 @@ def main():
         spark.sparkContext.setJobGroup("8",
             "Extraction de toutes les mesures des capteurs FR"
         )
-        #sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
-        measurements_df = extract_measurements_df(spark,5579)
+        sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
+        measurements_df = extract_measurements_df(spark,sensors_ids)
         
         measurements_df_raw = transform_measurements_raw(measurements_df)
         spark.sparkContext.setLocalProperty("callSite.short",
