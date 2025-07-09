@@ -1,17 +1,16 @@
-import pdfplumber
-import json
-import re, requests
+import pdfplumber, json, re, requests, os
 
 # Mapping pour convertir les chiffres normaux en subscript
 SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
 
 
 def scrap_standards():
+    os.mkdir('data_output', exist_ok = True)
     url = "https://www.ecologie.gouv.fr/sites/default/files/documents/01_Tableau-Normes-Seuils%20r%C3%A9glementaires.pdf"
     response = requests.get(url, verify=False)
     
     if response.status_code == 200:
-        with open("data_output/normes/tableau_normes.pdf","wb") as f:
+        with open("tableau_normes.pdf","wb") as f:
             f.write(response.content)
     else:
         print("Erreur lors du téléchargement du document")
