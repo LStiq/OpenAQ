@@ -6,10 +6,12 @@ from spark.extraction import (
 from spark.transformation import (
     transform_parameters, transform_countries, transform_params_per_country,
     transform_providers, transform_world_locations, transform_world_sensors,
-    filter_france_locations, filter_france_sensors, transform_measurements, transform_coords_france, transform_cities_points
+    filter_france_locations, filter_france_sensors, transform_measurements_raw, transform_measurements_agg_daily, transform_coords_france, transform_cities_points
 )
+from spark.scrap import get_polluants_data
 from spark.load import load_parquet
 from spark.config.settings import configure_environment
+import pandas as pd
 
 def main():
     # 1. Configuration et création de la session Spark
@@ -17,9 +19,11 @@ def main():
     spark = SparkSession.builder \
         .appName("ETL_OpenAQ") \
         .config("spark.master", "local") \
+        .config("spark.sql.session.timeZone", "UTC") \
         .getOrCreate()
 
     try:
+        get_polluants_data()
         # ------------------------------------------------------------------
         # 2.1 Parameters
         # ------------------------------------------------------------------
@@ -136,20 +140,29 @@ def main():
         load_parquet(cleaned_cities_points_df, "data_output/france_cities_sensors")
         spark.sparkContext.cancelJobGroup("7")
 
-        # # ------------------------------------------------------------------
-        # # 2.8 Measurements sensors - France
-        # # ------------------------------------------------------------------
-        # spark.sparkContext.setJobGroup("8",
-        #     "Extraction de toutes les mesures des capteurs FR"
-        # )
-        # sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
-        # measurements_df = extract_measurements_df(spark,sensors_ids)
-        # cleaned_measurements_df = transform_measurements(measurements_df)
-        # spark.sparkContext.setLocalProperty("callSite.short",
-        #     "Ecriture du dataframe des mesures en fichier parquet"
-        # )
-        # load_parquet(cleaned_measurements_df, "data_output/measurements")
-        # spark.sparkContext.cancelJobGroup("8")
+        # ------------------------------------------------------------------
+        # 2.8 Measurements sensors - France
+        # ------------------------------------------------------------------
+        spark.sparkContext.setJobGroup("8",
+            "Extraction de toutes les mesures des capteurs FR"
+        )
+        #sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
+        measurements_df = extract_measurements_df(spark,5579)
+        
+        measurements_df_raw = transform_measurements_raw(measurements_df)
+        spark.sparkContext.setLocalProperty("callSite.short",
+            "Ecriture du dataframe des mesures raw en fichier parquet"
+        )
+
+        load_parquet(measurements_df_raw, "data_output/raw_measurements")
+
+        measurements_df_agg = transform_measurements_agg_daily(measurements_df)
+        spark.sparkContext.setLocalProperty("callSite.short",
+            "Ecriture du dataframe des mesures agg en fichier parquet"
+        )
+
+        load_parquet(measurements_df_agg, "data_output/agg_measurements")
+        spark.sparkContext.cancelJobGroup("8")
 
     finally:
         input("🔴 Appuyez sur 'Entrée' pour fermer Spark et l'interface UI...")
