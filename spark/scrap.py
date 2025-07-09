@@ -5,13 +5,12 @@ SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
 
 
 def scrap_standards():
-    if not os.path.isdir('data_output'):
-        os.makedirs('data_output/normes')
+    os.makedirs('data_output/normes', exist_ok=True)
     url = "https://www.ecologie.gouv.fr/sites/default/files/documents/01_Tableau-Normes-Seuils%20r%C3%A9glementaires.pdf"
     response = requests.get(url, verify=False)
     
     if response.status_code == 200:
-        with open("tableau_normes.pdf","wb") as f:
+        with open("data_output/normes/tableau_normes.pdf","wb") as f:
             f.write(response.content)
     else:
         print("Erreur lors du téléchargement du document")
@@ -156,7 +155,7 @@ def create_json_from_pdf(pdf_path):
 
 def get_polluants_data():
     scrap_standards()
-    pdf_path = "tableau_normes.pdf"  # Le PDF doit être dans le même dossier que le script
+    pdf_path = "data_output/normes/tableau_normes.pdf"  # Le PDF doit être dans le même dossier que le script
     data = create_json_from_pdf(pdf_path)
     with open("data_output/normes/polluants.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
