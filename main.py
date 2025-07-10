@@ -9,7 +9,7 @@ from spark.transformation import (
     filter_france_locations, filter_france_sensors, transform_measurements_raw, transform_measurements_agg_daily, transform_coords_france, transform_cities_points
 )
 from spark.scrap import get_polluants_data
-from spark.load import load_parquet
+from spark.load import load_sql
 from spark.config.settings import configure_environment
 
 def main():
@@ -19,6 +19,7 @@ def main():
         .appName("ETL_OpenAQ") \
         .config("spark.master", "local") \
         .config("spark.sql.session.timeZone", "UTC") \
+        .config("spark.jars", "spark/jars/postgresql-42.7.3.jar") \
         .getOrCreate()
 
     try:
@@ -34,7 +35,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short", 
             "Ecriture du dataframe des paramètres en fichier parquet"
         )
-        load_parquet(cleaned_params_df, "data_output/parameters")
+        load_sql(cleaned_params_df,"parameters")
         spark.sparkContext.cancelJobGroup("1")
 
         # ------------------------------------------------------------------
@@ -48,7 +49,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des pays en fichier parquet"
         )
-        load_parquet(cleaned_countries_df, "data_output/countries")
+        load_sql(cleaned_countries_df, "countries")
 
         # 2.2.5 parameters_per_country
         spark.sparkContext.setJobGroup("2", "Extraction des paramètres par pays")
@@ -56,7 +57,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Filtre du dataframe des pays puis écriture du dataframe des paramètres par pays"
         )
-        load_parquet(params_per_country_df, "data_output/parameters_per_country")
+        load_sql(params_per_country_df, "parameters_per_country")
         spark.sparkContext.cancelJobGroup("2")
 
         # ------------------------------------------------------------------
@@ -69,7 +70,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des providers en fichier parquet"
         )
-        load_parquet(cleaned_providers_df, "data_output/providers")
+        load_sql(cleaned_providers_df, "providers")
         spark.sparkContext.cancelJobGroup("3")
 
         # ------------------------------------------------------------------
@@ -82,7 +83,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des localisations en fichier parquet"
         )
-        load_parquet(cleaned_world_locations_df, "data_output/world_locations")
+        load_sql(cleaned_world_locations_df, "world_locations")
         spark.sparkContext.cancelJobGroup("4")
 
         # ------------------------------------------------------------------
@@ -93,7 +94,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Extraction des capteurs puis écriture du dataframe en fichier parquet"
         )
-        load_parquet(cleaned_world_sensors_df, "data_output/world_sensors")
+        load_sql(cleaned_world_sensors_df, "world_sensors")
         spark.sparkContext.cancelJobGroup("5")
 
         # ------------------------------------------------------------------
@@ -106,13 +107,13 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Filtre du dataframe sur la France puis écriture des localisations"
         )
-        load_parquet(france_locations_df, "data_output/france_locations")
+        load_sql(france_locations_df, "france_locations")
 
         spark.sparkContext.setLocalProperty("callSite.short",
             "Jointure capteurs/localisations FR puis écriture du dataframe des capteurs"
         )
         france_sensors_df = filter_france_sensors(cleaned_world_sensors_df, france_locations_df)
-        load_parquet(france_sensors_df, "data_output/france_sensors")
+        load_sql(france_sensors_df, "france_sensors")
         spark.sparkContext.cancelJobGroup("6")
 
         # ------------------------------------------------------------------
@@ -136,32 +137,32 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des villes des capteurs"
         )
-        load_parquet(cleaned_cities_points_df, "data_output/france_cities_sensors")
+        load_sql(cleaned_cities_points_df, "france_cities_sensors")
         spark.sparkContext.cancelJobGroup("7")
 
-        # ------------------------------------------------------------------
-        # 2.8 Measurements sensors - France
-        # ------------------------------------------------------------------
-        spark.sparkContext.setJobGroup("8",
-            "Extraction de toutes les mesures des capteurs FR"
-        )
-        sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
-        measurements_df = extract_measurements_df(spark,sensors_ids)
+        # # ------------------------------------------------------------------
+        # # 2.8 Measurements sensors - France
+        # # ------------------------------------------------------------------
+        # spark.sparkContext.setJobGroup("8",
+        #     "Extraction de toutes les mesures des capteurs FR"
+        # )
+        # sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
+        # measurements_df = extract_measurements_df(spark,sensors_ids)
         
-        measurements_df_raw = transform_measurements_raw(measurements_df)
-        spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des mesures raw en fichier parquet"
-        )
+        # measurements_df_raw = transform_measurements_raw(measurements_df)
+        # spark.sparkContext.setLocalProperty("callSite.short",
+        #     "Ecriture du dataframe des mesures raw en fichier parquet"
+        # )
 
-        load_parquet(measurements_df_raw, "data_output/raw_measurements")
+        # load_sql(measurements_df_raw, "raw_measurements")
 
-        measurements_df_agg = transform_measurements_agg_daily(measurements_df)
-        spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des mesures agg en fichier parquet"
-        )
+        # measurements_df_agg = transform_measurements_agg_daily(measurements_df)
+        # spark.sparkContext.setLocalProperty("callSite.short",
+        #     "Ecriture du dataframe des mesures agg en fichier parquet"
+        # )
 
-        load_parquet(measurements_df_agg, "data_output/agg_measurements")
-        spark.sparkContext.cancelJobGroup("8")
+        # load_sql(measurements_df_agg, "agg_measurements")
+        # spark.sparkContext.cancelJobGroup("8")
 
     finally:
         input("🔴 Appuyez sur 'Entrée' pour fermer Spark et l'interface UI...")
