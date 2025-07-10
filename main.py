@@ -19,7 +19,7 @@ def main():
         .appName("ETL_OpenAQ") \
         .config("spark.master", "local") \
         .config("spark.sql.session.timeZone", "UTC") \
-        .config("spark.jars", "spark/jars/postgresql-42.7.3.jar") \
+        .config("spark.jars", "OpenAQ/spark/jars/postgresql-42.7.3.jar") \
         .getOrCreate()
 
     try:

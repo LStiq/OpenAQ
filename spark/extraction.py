@@ -128,12 +128,6 @@ cities_schema = StructType([
 ])
 
 
-def serialize_complex_columns(df):
-    for field in df.schema.fields:
-        if isinstance(field.dataType, (StructType, ArrayType)):
-            df = df.withColumn(field.name, to_json(col(field.name)))
-    return df
-
 def extract_parameters_df(spark: SparkSession):
     param_data = get_parameters()
     param_rdd = spark.sparkContext.parallelize([json.dumps(param) for param in param_data["results"]])
@@ -145,17 +139,15 @@ def extract_countries_df(spark: SparkSession):
     countries_data = get_countries()
     countries_rdd = spark.sparkContext.parallelize([json.dumps(country) for country in countries_data["results"]])
     raw_df = spark.read.schema(country_schema).json(countries_rdd)
-    df = serialize_complex_columns(raw_df)
 
-    return df
+    return raw_df
 
 def extract_providers_df(spark: SparkSession):
     providers_data = get_providers()
     providers_rdd = spark.sparkContext.parallelize([json.dumps(provider) for provider in providers_data["results"]])
     raw_df = spark.read.schema(provider_schema).json(providers_rdd)
-    df = serialize_complex_columns(raw_df)
 
-    return df
+    return raw_df
 
 def extract_world_locations_df(spark: SparkSession):
     world_location_data = []
@@ -186,8 +178,7 @@ def extract_world_locations_df(spark: SparkSession):
 
     world_location_rdd = spark.sparkContext.parallelize([json.dumps(loc) for loc in world_location_data])
     raw_df = spark.read.schema(location_schema).json(world_location_rdd)
-    df = serialize_complex_columns(raw_df)
-    return df
+    return raw_df
 
 
 def extract_cities_locations_df(spark: SparkSession, points_list):
@@ -213,9 +204,8 @@ def extract_cities_locations_df(spark: SparkSession, points_list):
             })
     cities_rdd = spark.sparkContext.parallelize([json.dumps(c) for c in cities_list])
     cities_df = spark.read.schema(cities_schema).json(cities_rdd)
-    df = serialize_complex_columns(cities_df)
 
-    return df
+    return cities_df
 
 def extract_measurements_df(spark: SparkSession, sensors_ids):
     measurements_list = []
@@ -245,6 +235,5 @@ def extract_measurements_df(spark: SparkSession, sensors_ids):
 
     measurements_rdd = spark.sparkContext.parallelize([json.dumps(m) for m in measurements_list])
     raw_df = spark.read.schema(measurement_schema).json(measurements_rdd)
-    df = serialize_complex_columns(raw_df)
 
-    return df
+    return raw_df
