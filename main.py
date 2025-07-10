@@ -140,29 +140,29 @@ def main():
         load_facts(cleaned_cities_points_df, "france_cities_sensors")
         spark.sparkContext.cancelJobGroup("7")
 
-        # # ------------------------------------------------------------------
-        # # 2.8 Measurements sensors - France
-        # # ------------------------------------------------------------------
-        # spark.sparkContext.setJobGroup("8",
-        #     "Extraction de toutes les mesures des capteurs FR"
-        # )
-        # sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
-        # measurements_df = extract_measurements_df(spark,sensors_ids)
+        # ------------------------------------------------------------------
+        # 2.8 Measurements sensors - France
+        # ------------------------------------------------------------------
+        spark.sparkContext.setJobGroup("8",
+            "Extraction de toutes les mesures des capteurs FR"
+        )
+        sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
+        measurements_df = extract_measurements_df(spark,sensors_ids)
         
-        # measurements_df_raw = transform_measurements_raw(measurements_df)
-        # spark.sparkContext.setLocalProperty("callSite.short",
-        #     "Ecriture du dataframe des mesures raw en fichier parquet"
-        # )
+        measurements_df_raw = transform_measurements_raw(measurements_df)
+        spark.sparkContext.setLocalProperty("callSite.short",
+            "Ecriture du dataframe des mesures raw en fichier parquet"
+        )
 
-        # load_measures(measurements_df_raw, "raw_measurements")
+        load_measures(measurements_df_raw, "raw_measurements")
 
-        # measurements_df_agg = transform_measurements_agg_daily(measurements_df)
-        # spark.sparkContext.setLocalProperty("callSite.short",
-        #     "Ecriture du dataframe des mesures agg en fichier parquet"
-        # )
+        measurements_df_agg = transform_measurements_agg_daily(measurements_df)
+        spark.sparkContext.setLocalProperty("callSite.short",
+            "Ecriture du dataframe des mesures agg en fichier parquet"
+        )
 
-        # load_measures(measurements_df_agg, "agg_measurements")
-        # spark.sparkContext.cancelJobGroup("8")
+        load_measures(measurements_df_agg, "agg_measurements")
+        spark.sparkContext.cancelJobGroup("8")
 
     finally:
         input("🔴 Appuyez sur 'Entrée' pour fermer Spark et l'interface UI...")
