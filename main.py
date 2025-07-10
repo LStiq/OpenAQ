@@ -9,7 +9,7 @@ from spark.transformation import (
     filter_france_locations, filter_france_sensors, transform_measurements_raw, transform_measurements_agg_daily, transform_coords_france, transform_cities_points
 )
 from spark.scrap import get_polluants_data
-from spark.load import load_sql
+from spark.load import load_facts, load_measures
 from spark.config.settings import configure_environment
 
 def main():
@@ -35,7 +35,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short", 
             "Ecriture du dataframe des paramètres en fichier parquet"
         )
-        load_sql(cleaned_params_df,"parameters")
+        load_facts(cleaned_params_df,"parameters")
         spark.sparkContext.cancelJobGroup("1")
 
         # ------------------------------------------------------------------
@@ -49,7 +49,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des pays en fichier parquet"
         )
-        load_sql(cleaned_countries_df, "countries")
+        load_facts(cleaned_countries_df, "countries")
 
         # 2.2.5 parameters_per_country
         spark.sparkContext.setJobGroup("2", "Extraction des paramètres par pays")
@@ -57,7 +57,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Filtre du dataframe des pays puis écriture du dataframe des paramètres par pays"
         )
-        load_sql(params_per_country_df, "parameters_per_country")
+        load_facts(params_per_country_df, "parameters_per_country")
         spark.sparkContext.cancelJobGroup("2")
 
         # ------------------------------------------------------------------
@@ -70,7 +70,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des providers en fichier parquet"
         )
-        load_sql(cleaned_providers_df, "providers")
+        load_facts(cleaned_providers_df, "providers")
         spark.sparkContext.cancelJobGroup("3")
 
         # ------------------------------------------------------------------
@@ -83,7 +83,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des localisations en fichier parquet"
         )
-        load_sql(cleaned_world_locations_df, "world_locations")
+        load_facts(cleaned_world_locations_df, "world_locations")
         spark.sparkContext.cancelJobGroup("4")
 
         # ------------------------------------------------------------------
@@ -94,7 +94,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Extraction des capteurs puis écriture du dataframe en fichier parquet"
         )
-        load_sql(cleaned_world_sensors_df, "world_sensors")
+        load_facts(cleaned_world_sensors_df, "world_sensors")
         spark.sparkContext.cancelJobGroup("5")
 
         # ------------------------------------------------------------------
@@ -107,13 +107,13 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Filtre du dataframe sur la France puis écriture des localisations"
         )
-        load_sql(france_locations_df, "france_locations")
+        load_facts(france_locations_df, "france_locations")
 
         spark.sparkContext.setLocalProperty("callSite.short",
             "Jointure capteurs/localisations FR puis écriture du dataframe des capteurs"
         )
         france_sensors_df = filter_france_sensors(cleaned_world_sensors_df, france_locations_df)
-        load_sql(france_sensors_df, "france_sensors")
+        load_facts(france_sensors_df, "france_sensors")
         spark.sparkContext.cancelJobGroup("6")
 
         # ------------------------------------------------------------------
@@ -137,7 +137,7 @@ def main():
         spark.sparkContext.setLocalProperty("callSite.short",
             "Ecriture du dataframe des villes des capteurs"
         )
-        load_sql(cleaned_cities_points_df, "france_cities_sensors")
+        load_facts(cleaned_cities_points_df, "france_cities_sensors")
         spark.sparkContext.cancelJobGroup("7")
 
         # # ------------------------------------------------------------------
@@ -154,14 +154,14 @@ def main():
         #     "Ecriture du dataframe des mesures raw en fichier parquet"
         # )
 
-        # load_sql(measurements_df_raw, "raw_measurements")
+        # load_measures(measurements_df_raw, "raw_measurements")
 
         # measurements_df_agg = transform_measurements_agg_daily(measurements_df)
         # spark.sparkContext.setLocalProperty("callSite.short",
         #     "Ecriture du dataframe des mesures agg en fichier parquet"
         # )
 
-        # load_sql(measurements_df_agg, "agg_measurements")
+        # load_measures(measurements_df_agg, "agg_measurements")
         # spark.sparkContext.cancelJobGroup("8")
 
     finally:
