@@ -48,7 +48,7 @@ def get_measurements(sensors_id):
     today = date.today()
     yesterday = today - timedelta(days=1)
     headers = get_headers()
-    response = requests.get(f"{API_BASE_URL}sensors/{sensors_id}/measurements?datetime_from={yesterday}&datetime_to{today}", headers=headers, verify=False) #Jour au jour
+    response = requests.get(f"{API_BASE_URL}sensors/{sensors_id}/measurements?datetime_from={yesterday}&datetime_to={today}", headers=headers, verify=False) #Jour au jour
     if response.status_code == 429: # Trop de requêtes
         print("Pause d'1 min")
         time.sleep(60)

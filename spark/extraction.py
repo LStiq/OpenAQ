@@ -232,7 +232,6 @@ def extract_measurements_df(spark: SparkSession, sensors_ids):
             print(f"--- Limite atteinte, pause 60s avant le prochain chunk ---")
             time.sleep(60)
 
-    measurements_list = get_measurements(sensors_ids)
     measurements_rdd = spark.sparkContext.parallelize([json.dumps(m) for m in measurements_list])
     raw_df = spark.read.schema(measurement_schema).json(measurements_rdd)
 
