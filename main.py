@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from spark.extraction import (
-    extract_parameters_df, extract_countries_df, extract_providers_df, 
+    extract_parameters_df, extract_countries_df, extract_providers_df,
     extract_world_locations_df, extract_measurements_df, extract_cities_locations_df
 )
 from spark.transformation import (
@@ -33,7 +33,7 @@ def main():
         parameters_df = extract_parameters_df(spark)
         cleaned_params_df = transform_parameters(parameters_df)
         spark.sparkContext.setLocalProperty("callSite.short", 
-            "Ecriture du dataframe des paramètres en fichier parquet"
+            "Ecriture du dataframe des paramètres en base."
         )
         load_facts(cleaned_params_df,"parameters")
         spark.sparkContext.cancelJobGroup("1")
@@ -47,7 +47,7 @@ def main():
         countries_df = extract_countries_df(spark)
         cleaned_countries_df = transform_countries(countries_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des pays en fichier parquet"
+            "Ecriture du dataframe des pays en base."
         )
         load_facts(cleaned_countries_df, "countries")
 
@@ -68,7 +68,7 @@ def main():
         providers_df = extract_providers_df(spark)
         cleaned_providers_df = transform_providers(providers_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des providers en fichier parquet"
+            "Ecriture du dataframe des providers en base."
         )
         load_facts(cleaned_providers_df, "providers")
         spark.sparkContext.cancelJobGroup("3")
@@ -81,7 +81,7 @@ def main():
         world_locations_df = extract_world_locations_df(spark)
         cleaned_world_locations_df = transform_world_locations(world_locations_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des localisations en fichier parquet"
+            "Ecriture du dataframe des localisations en base."
         )
         load_facts(cleaned_world_locations_df, "world_locations")
         spark.sparkContext.cancelJobGroup("4")
@@ -92,7 +92,7 @@ def main():
         spark.sparkContext.setJobGroup("5", "Extraction des capteurs des localisations")
         cleaned_world_sensors_df = transform_world_sensors(world_locations_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Extraction des capteurs puis écriture du dataframe en fichier parquet"
+            "Extraction des capteurs puis écriture du dataframe en base."
         )
         load_facts(cleaned_world_sensors_df, "world_sensors")
         spark.sparkContext.cancelJobGroup("5")
@@ -101,7 +101,7 @@ def main():
         # 2.6 Locations & Sensors - France
         # ------------------------------------------------------------------
         spark.sparkContext.setJobGroup("6", 
-            "Extraction des localisations et capteurs FR ayant eu des mesures à partir du 1er Janvier 2025"
+            "Extraction des localisations et capteurs FR ayant eu des mesures"
         )
         france_locations_df = filter_france_locations(cleaned_world_locations_df)
         spark.sparkContext.setLocalProperty("callSite.short",
@@ -151,21 +151,20 @@ def main():
         
         measurements_df_raw = transform_measurements_raw(measurements_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des mesures raw en fichier parquet"
+            "Ecriture du dataframe des mesures raw en base."
         )
 
         load_measures(measurements_df_raw, "raw_measurements")
 
         measurements_df_agg = transform_measurements_agg_daily(measurements_df)
         spark.sparkContext.setLocalProperty("callSite.short",
-            "Ecriture du dataframe des mesures agg en fichier parquet"
+            "Ecriture du dataframe des mesures agg en base."
         )
 
         load_measures(measurements_df_agg, "agg_measurements")
         spark.sparkContext.cancelJobGroup("8")
 
     finally:
-        input("🔴 Appuyez sur 'Entrée' pour fermer Spark et l'interface UI...")
         print("Pipeline ETL terminé avec succès !")
         spark.stop()
 
