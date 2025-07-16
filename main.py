@@ -34,13 +34,13 @@ class ETLManager:
             (SELECT EXISTS (
                 SELECT 1 FROM information_schema.tables
                 WHERE table_schema = 'public' AND table_name = '{table_name}'
-            )) AS table_exists
+            ))
         """
         try:
             df = self.spark.read.jdbc(url=self.jdbc_url, table=query, properties=self.properties)
             return df.collect()[0][0]
         except Exception as e:
-            print(f"Erreur JDBC lors de la vérification de la table {table_name} : {e}")
+            print(f"[ERREUR] Vérification table '{table_name}' a échoué : {e.__class__.__name__}: {e}")
             return False
 
     def read_table(self, table_name: str) -> DataFrame:
