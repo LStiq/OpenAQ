@@ -1,13 +1,14 @@
-import os, psycopg
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
 # Variables PG
 JDBC_URL = os.getenv("JDBC_URL")
 DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PROPERTIES = {
-        "user": os.getenv("DB_USER"),
-        "password": os.getenv("DB_PASSWORD"),
+        "user": DB_USER,
+        "password": DB_PASSWORD,
         "driver": "org.postgresql.Driver"
 }
 
