@@ -153,7 +153,7 @@ def create_json_from_pdf(pdf_path):
             polluants.append(parsed)
     return {"polluants": polluants}
 
-def get_polluants_data():
+def get_normes_data():
     scrap_standards()
     pdf_path = "data_output/normes/tableau_normes.pdf"  # Le PDF doit être dans le même dossier que le script
     data = create_json_from_pdf(pdf_path)
