@@ -34,5 +34,3 @@ def configure_environment():
     os.environ["PYSPARK_PYTHON"] = PYSPARK_PYTHON
     os.environ["PATH"] += os.pathsep + os.path.join(SPARK_HOME, "bin")
     print("Environnement Spark configuré avec succès.")
-
-print(DB_PROPERTIES, AQ_KEY)
