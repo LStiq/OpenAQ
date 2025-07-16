@@ -49,6 +49,7 @@ class ETLManager:
         return self.spark.read.jdbc(url=self.jdbc_url, table=table_name, properties=self.properties)
 
     def write_table(self, df: DataFrame, table_name: str, mode: str = "overwrite"):
+        print ("DB_PROPERTIES:", self.properties)
         df.write.jdbc(url=self.jdbc_url, table=table_name, mode=mode, properties=self.properties)
 
     def run_etl_step(self, 
