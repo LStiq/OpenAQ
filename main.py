@@ -30,17 +30,19 @@ class ETLManager:
             self.spark.sparkContext.cancelJobGroup(group_id)
 
     def table_exists(self, table_name: str) -> bool:
-        query = f"""
-            (SELECT EXISTS (
-                SELECT 1 FROM information_schema.tables
-                WHERE table_schema = 'public' AND table_name = '{table_name}'
-            ))
-        """
         try:
-            df = self.spark.read.jdbc(url=self.jdbc_url, table=query, properties=self.properties)
-            return df.collect()[0][0]
+            tables_df = self.spark.read.jdbc(
+                url=self.jdbc_url,
+                table="information_schema.tables",
+                properties=self.properties
+            )
+            result = tables_df.filter(
+                (tables_df.table_schema == "public") &
+                (tables_df.table_name == table_name)
+            ).limit(1).count() > 0
+            return result
         except Exception as e:
-            print(f"[ERREUR] Vérification table '{table_name}' a échoué : {e.__class__.__name__}: {e}")
+            print(f"[ERREUR] Vérification table '{table_name}' a échoué : {e}")
             return False
 
     def read_table(self, table_name: str) -> DataFrame:
