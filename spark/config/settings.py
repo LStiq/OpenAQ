@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(__file__),".env")
+load_dotenv(dotenv_path, override=True)
 
 # Variables PG
 JDBC_URL = os.getenv("JDBC_URL")
@@ -33,3 +34,5 @@ def configure_environment():
     os.environ["PYSPARK_PYTHON"] = PYSPARK_PYTHON
     os.environ["PATH"] += os.pathsep + os.path.join(SPARK_HOME, "bin")
     print("Environnement Spark configuré avec succès.")
+
+print(DB_PROPERTIES, AQ_KEY)
