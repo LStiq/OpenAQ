@@ -1,0 +1,84 @@
+@startuml
+!define TABLE(name,desc) class name as "desc" << (T,#FFDD99) >>
+!define PK(x) <u>x</u>
+
+skinparam class {
+  BackgroundColor<<T>> LightYellow
+  BorderColor<<T>> DarkOrange
+  FontSize 12
+  FontName Century Gothic
+}
+
+title Schéma en étoile - Air Quality Data
+
+' Table de faits au centre
+TABLE(measurements, "Table de faits - measurements")
+measurements : day : date
+measurements : sensor_id : string
+measurements : parameter_id : string
+measurements : value : float
+measurements : min_value : float
+measurements : max_value : float
+measurements : median_value : float
+measurements : stddev_value : float
+measurements : observed_count : int
+measurements : expected_count : int
+
+' Tables de Dimensions - autour
+TABLE(parameters, "Dimension - parameters")
+parameters : PK(param_id) : string
+parameters : param_name : string
+parameters : param_units : string
+parameters : param_displayName : string
+parameters : param_description : string
+
+TABLE(world_sensors, "Dimension - sensors")
+world_sensors : PK(sensor_id) : string
+world_sensors : location_id : string
+world_sensors : sensor_name : string
+world_sensors : sensor_parameter_id : string
+world_sensors : sensor_parameter_displayName : string
+
+TABLE(france_locations, "Dimension - locations (France)")
+france_locations : PK(location_id) : string
+france_locations : location_name : string
+france_locations : provider_id : string
+france_locations : location_country_id : string
+france_locations : location_datetime_last_utc : timestamp
+france_locations : latitude : float
+france_locations : longitude : float
+
+TABLE(providers, "Dimension - providers")
+providers : PK(provider_id) : string
+providers : provider_name : string
+providers : provider_sourceName : string
+providers : provider_datetime_added : timestamp
+providers : provider_datetime_last : timestamp
+
+TABLE(countries, "Dimension - countries")
+countries : PK(country_id) : string
+countries : country_code : string
+countries : country_name : string
+countries : date_first_measure : timestamp
+countries : date_last_measure : timestamp
+
+TABLE(france_cities_sensors, "Dimension - cities (France)")
+france_cities_sensors : PK(location_id) : string
+france_cities_sensors : city_name : string
+france_cities_sensors : city_insee_code : string
+france_cities_sensors : city_postcode : string
+france_cities_sensors : city_population : int
+france_cities_sensors : latitude : float
+france_cities_sensors : longitude : float
+
+' Relations
+parameters "1" <-- "N" measurements : parameter_id
+world_sensors "1" <-- "N" measurements : sensor_id
+
+parameters "1" <-- "N" world_sensors : sensor_parameter_id
+france_locations "1" <-- "N" world_sensors : location_id
+providers "1" <-- "N" france_locations : provider_id
+countries "1" <-- "N" france_locations : location_country_id
+france_cities_sensors "1" <-- "N" france_locations : location_id
+
+@enduml

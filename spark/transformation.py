@@ -41,10 +41,22 @@ def transform_providers(df_raw: DataFrame) -> DataFrame:
     cleaned_df = df_raw.select(
         col("id").alias("provider_id"),
         col("name").alias("provider_name"),
-        col("sourceName").alias("provider_sourceName"),
+        col("sourceName").alias("provider_source_name"),
         col("datetimeAdded").alias("provider_datetime_added"),
-        col("datetimeLast").alias("provider_datetime_last"),
-        col("parameters.id").alias("provider_parameters_id")
+        col("datetimeLast").alias("provider_datetime_last")
+    )
+
+    return cleaned_df
+
+def transform_param_per_providers(df_raw: DataFrame) -> DataFrame:
+    exploded_df = df_raw.select(
+        col("id").alias("provider_id"),
+        explode(col("parameters")).alias("parameter")
+    )
+
+    cleaned_df = exploded_df.select(
+        col("provider_id"),
+        col("parameter.id").alias("parameter_id")
     )
     return cleaned_df
 

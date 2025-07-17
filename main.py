@@ -5,8 +5,9 @@ from spark.extraction import (
 )
 from spark.transformation import (
     transform_parameters, transform_countries, transform_params_per_country,
-    transform_providers, transform_world_locations, transform_world_sensors,
-    filter_france_locations, filter_france_sensors, transform_measurements_raw, transform_measurements_agg_daily, transform_coords_france, transform_cities_points
+    transform_providers, transform_param_per_providers, transform_world_locations, transform_world_sensors,
+    filter_france_locations, filter_france_sensors, transform_measurements_raw,
+    transform_measurements_agg_daily, transform_coords_france, transform_cities_points
 )
 from spark.scrap import get_normes_data
 from spark.config.settings import configure_environment, DB_PROPERTIES, JDBC_URL
@@ -140,20 +141,32 @@ def main():
         # ------------------------------------------------------------------
         # 2.4 Providers
         # ------------------------------------------------------------------
+        provider_df_raw = extract_providers_df(spark)
         providers_df = etl.run_etl_step(
             group_id="4",
             description="Extraction des providers",
             table_name="providers",
-            extract_fn=extract_providers_df,
+            extract_fn=lambda spark: provider_df_raw,
             transform_fn=transform_providers
         )
 
         # ------------------------------------------------------------------
-        # 2.4 Locations
+        # 2.5 Param per Providers
+        # ------------------------------------------------------------------
+        param_providers_df = etl.run_etl_step(
+            group_id="5",
+            description="Extraction des paramètre par fournisseur",
+            table_name="providers",
+            extract_fn=lambda spark: transform_param_per_providers(provider_df_raw),
+            transform_fn=lambda df: df
+        )
+
+        # ------------------------------------------------------------------
+        # 2.6 Locations
         # ------------------------------------------------------------------
         world_locations_df_raw = extract_world_locations_df(spark)
         world_locations_df = etl.run_etl_step(
-            group_id="5",
+            group_id="6",
             description="Extraction de toutes les localisations dans le monde",
             table_name="world_locations",
             extract_fn=lambda spark: world_locations_df_raw,
@@ -161,10 +174,10 @@ def main():
         )
 
         # ------------------------------------------------------------------
-        # 2.6 Sensors
+        # 2.7 Sensors
         # ------------------------------------------------------------------
         world_sensors_df = etl.run_etl_step(
-            group_id="6",
+            group_id="7",
             description="Extraction des capteurs des localisations",
             table_name="world_sensors",
             extract_fn=lambda spark: transform_world_sensors(world_locations_df_raw),
@@ -172,10 +185,10 @@ def main():
         )
 
         # ------------------------------------------------------------------
-        # 2.7 et 2.8 Locations & Sensors - France
+        # 2.8 et 2.9 Locations & Sensors - France
         # ------------------------------------------------------------------
         france_locations_df = etl.run_etl_step(
-            group_id="7",
+            group_id="8",
             description="Extraction des localisations France",
             table_name="france_locations",
             extract_fn=lambda spark: filter_france_locations(world_locations_df),
@@ -183,7 +196,7 @@ def main():
         )
 
         france_sensors_df = etl.run_etl_step(
-            group_id="8",
+            group_id="9",
             description="Extraction des capteurs France",
             table_name="france_sensors",
             extract_fn=lambda spark: filter_france_sensors(world_sensors_df, france_locations_df),
@@ -191,10 +204,10 @@ def main():
         )
 
         # ------------------------------------------------------------------
-        # 2.9 Cities of sensors - France
+        # 2.10 Cities of sensors - France
         # ------------------------------------------------------------------
         france_cities_sensors_df = etl.run_etl_step(
-            group_id="9",
+            group_id="10",
             description="Extraction des villes des capteurs France",
             table_name="france_cities_sensors",
             extract_fn=lambda spark: extract_cities_locations_df(
@@ -205,7 +218,7 @@ def main():
         )
 
         # ------------------------------------------------------------------
-        # 2.10 et 2.11 Measurements sensors - France
+        # 2.11 et 2.12 Measurements sensors - France
         # ------------------------------------------------------------------
         sensors_ids = [row["sensor_id"] for row in france_sensors_df.collect()]
         measurements_df = extract_measurements_df(spark, sensors_ids)
@@ -213,7 +226,7 @@ def main():
         measurements_df_agg = transform_measurements_agg_daily(measurements_df)
 
         etl.run_etl_step(
-            group_id="10",
+            group_id="11",
             description="Ecriture mesures raw",
             table_name="raw_measurements",
             extract_fn=lambda spark: measurements_df_raw,
@@ -222,7 +235,7 @@ def main():
         )
 
         etl.run_etl_step(
-            group_id="11",
+            group_id="12",
             description="Ecriture mesures agg",
             table_name="agg_measurements",
             extract_fn=lambda spark: measurements_df_agg,
