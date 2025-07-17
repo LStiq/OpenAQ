@@ -37,7 +37,7 @@ class ETLManager:
                 properties=self.properties
             )
             result = tables_df.filter(
-                (tables_df.table_schema == "public") &
+                (tables_df.table_schema == "dev") &
                 (tables_df.table_name == table_name)
             ).limit(1).count() > 0
             return result
