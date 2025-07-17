@@ -27,7 +27,7 @@ def transform_countries(df_raw: DataFrame) -> DataFrame:
 
 def transform_params_per_country(df_raw: DataFrame) -> DataFrame:
     exploded_df = df_raw.select(
-        col("country_id"),
+        col("id").alias("country_id"),
         explode(col("parameters")).alias("parameter")
     )
 
@@ -65,7 +65,7 @@ def transform_world_locations(df_raw: DataFrame) -> DataFrame:
 
 def transform_world_sensors(df_raw: DataFrame) -> DataFrame:
     exploded_df = df_raw.select(
-        col("location_id"),
+        col("id").alias("location_id"),
         col("name").alias("location_name"),
         explode(col("sensors")).alias("sensor")
     )

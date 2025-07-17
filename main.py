@@ -116,11 +116,12 @@ def main():
         # ------------------------------------------------------------------
         # 2.2 Countries
         # ------------------------------------------------------------------
+        countries_df_raw = extract_countries_df(spark)
         countries_df = etl.run_etl_step(
         group_id="2",
         description="Extraction des pays",
         table_name="countries",
-        extract_fn=extract_countries_df,
+        extract_fn=lambda spark: countries_df_raw,
         transform_fn=transform_countries
         )
 
@@ -132,7 +133,7 @@ def main():
         group_id="3",
         description="Extraction des paramètres par pays",
         table_name="parameters_per_country",
-        extract_fn=lambda spark: transform_params_per_country(countries_df),
+        extract_fn=lambda spark: transform_params_per_country(countries_df_raw),
         transform_fn=lambda df: df
         )
 
@@ -150,11 +151,12 @@ def main():
         # ------------------------------------------------------------------
         # 2.4 Locations
         # ------------------------------------------------------------------
+        world_locations_df_raw = extract_world_locations_df(spark)
         world_locations_df = etl.run_etl_step(
             group_id="5",
             description="Extraction de toutes les localisations dans le monde",
             table_name="world_locations",
-            extract_fn=extract_world_locations_df,
+            extract_fn=lambda spark: world_locations_df_raw,
             transform_fn=transform_world_locations
         )
 
@@ -165,7 +167,7 @@ def main():
             group_id="6",
             description="Extraction des capteurs des localisations",
             table_name="world_sensors",
-            extract_fn=lambda spark: transform_world_sensors(world_locations_df),
+            extract_fn=lambda spark: transform_world_sensors(world_locations_df_raw),
             transform_fn=lambda df: df
         )
 
