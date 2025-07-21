@@ -152,8 +152,8 @@ def main():
         # ------------------------------------------------------------------
         param_providers_df = etl.run_etl_step(
             group_id="5",
-            description="Extraction des paramètre par fournisseur",
-            table_name="providers",
+            description="Extraction des paramètre par provider",
+            table_name="param_per_providers",
             extract_fn=lambda spark: transform_param_per_providers(provider_df_raw),
             transform_fn=lambda df: df
         )
