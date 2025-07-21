@@ -4,7 +4,6 @@ from pyspark.sql.types import (
     StructType, StructField,
     StringType, IntegerType, BooleanType, ArrayType, FloatType
 )
-from pyspark.sql.functions import to_json, col
 from spark.functions import get_countries, get_measurements, get_parameters, get_providers, get_world_locations, chunk_list, get_communes
 
 
@@ -25,7 +24,7 @@ parameter_schema = StructType([
 country_schema = StructType([
     StructField("id", IntegerType(), True),
     StructField("code", StringType(), True),
-    StructField("datetimeFirst", StringType(), True),  # ou TimestampType si format ISO8601
+    StructField("datetimeFirst", StringType(), True),
     StructField("datetimeLast", StringType(), True),
     StructField("name", StringType(), True),
     StructField("parameters", ArrayType(parameter_schema), True)
@@ -107,7 +106,7 @@ coverage_schema = StructType([
 ])
 
 measurement_schema = StructType([
-    StructField("sensor_id", StringType(), True),
+    StructField("sensor_id", IntegerType(), True),
     StructField("value", FloatType(), True),
     StructField("parameter", parameter_schema, True),
     StructField("period", period_schema, True),

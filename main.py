@@ -87,8 +87,6 @@ class ETLManager:
                     print(f"Table '{table_name}' existe déjà et est une table dimension. Skip de l’étape.")
                     return self.read_table(table_name)
 
-
-
 def main():
     # 1. Configuration et création de la session Spark
     configure_environment()
@@ -96,7 +94,6 @@ def main():
         .appName("ETL_OpenAQ") \
         .config("spark.master", "local") \
         .config("spark.sql.session.timeZone", "UTC") \
-        .config("spark.jars", "OpenAQ/spark/jars/postgresql-42.7.3.jar") \
         .getOrCreate()
 
 
@@ -200,7 +197,7 @@ def main():
             description="Extraction des capteurs France",
             table_name="france_sensors",
             extract_fn=lambda spark: filter_france_sensors(world_sensors_df, france_locations_df),
-            transform_fn=lambda df: df
+            transform_fn=lambda df: df   
         )
 
         # ------------------------------------------------------------------

@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, explode, to_date, lit, date_trunc, from_utc_timestamp, round, avg, min, max, stddev, median, sum
+from pyspark.sql.functions import col, explode, to_date, lit, to_timestamp, from_utc_timestamp, round, avg, min, max, stddev, median, sum, count, count_distinct, desc, date_format
 
 # ------------------------------------------------------------------
 # Transformation
@@ -102,6 +102,15 @@ def filter_france_sensors(all_sensors_df: DataFrame, fr_locations_df: DataFrame)
     joined_df = all_sensors_df.join(fr_locations_df, "location_id", "inner")
     return joined_df
 
+def profile_sensor_data(df: DataFrame) -> DataFrame:
+    profiled_df = df.groupBy("sensor_parameter_displayName") \
+        .agg(count("*").alias("nb_mesures"), 
+            count_distinct("sensor_id").alias("nb_capteurs"), 
+            count_distinct("location_id").alias("nb_stations")) \
+    .orderBy(desc("nb_mesures"))
+    return profiled_df
+
+
 def transform_coords_france(france_locations_df: DataFrame) -> DataFrame:
     cleaned_df = france_locations_df.select(
         col("location_id"),
@@ -138,9 +147,17 @@ def transform_measurements_raw(df_raw: DataFrame) -> DataFrame:
     return measurements_df
 
 def transform_measurements_agg_daily(df_raw: DataFrame) -> DataFrame:
-    measurements_df_day = df_raw.withColumns({
-        "day" : date_trunc("day", from_utc_timestamp(col("period.datetimeFrom.utc"), "Europe/Paris")),
-    }
+    measurements_df_day = df_raw.withColumn(
+        "day",
+        to_date(
+            from_utc_timestamp(
+                to_timestamp(col("period.datetimeFrom.utc")),  # 👈 parse le string
+                "Europe/Paris"
+            )
+        )
+    ).withColumn(
+        "day_fr",
+        date_format(col("day"), "dd/MM/yyyy")
     )
 
     measurements_df = measurements_df_day.select(
