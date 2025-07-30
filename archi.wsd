@@ -1,0 +1,31 @@
+title Schéma d’architecture de sécurité - Projet OpenAQ
+
+participant Utilisateur_Fin as "Utilisateur Final (Dashboard)"
+participant API_OpenAQ as "API OpenAQ"
+participant Serveur_App as "Serveur Application"
+participant Base_Donnees as "Base de Données PostgreSQL"
+participant Admin_Technique as "Compte Technique (etl_admin)"
+
+note over API_OpenAQ: Accès sécurisé via clé API\nStockée en variable d’environnement et chiffrée
+
+Utilisateur_Fin->Serveur_App: Consultation données (lecture seule)
+Serveur_App->Base_Donnees: Requête lecture (role: viewer_readonly)
+Base_Donnees-->Serveur_App: Résultat de la requête
+Serveur_App-->Utilisateur_Fin: Affichage dashboard
+
+Admin_Technique->Serveur_App: Chargement / Mise à jour données
+Serveur_App->API_OpenAQ: Requête données (clé API)
+API_OpenAQ-->Serveur_App: Réponse données
+Serveur_App->Base_Donnees: Écriture/Mise à jour (role: etl_admin)
+
+note over Base_Donnees: Sauvegardes automatiques quotidiennes\nChiffrement des données at rest\nTraçabilité via logs
+
+note over Serveur_App: Transferts sécurisés (HTTPS/SSL)
+
+Utilisateur_Fin->Serveur_App: Export données
+Serveur_App->Base_Donnees: Lecture données export (role: viewer_readonly)
+Base_Donnees-->Serveur_App: Données exportées
+Serveur_App-->Utilisateur_Fin: Fichier exporté
+
+note over Serveur_App, Base_Donnees: Séparation des rôles et privilèges\nContrôle strict des accès
+
