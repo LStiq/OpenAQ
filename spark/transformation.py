@@ -1,6 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import (
-    col, explode, to_date, lit, to_timestamp, round, avg, min, max, stddev, median, sum, count_distinct, date_format, when
+    col, explode, to_date, lit, to_timestamp, round, avg, min, max, stddev, median, sum, count_distinct, split, date_format, when,regexp_replace
 )
 
 # ------------------------------------------------------------------
@@ -139,11 +139,12 @@ def transform_cities_points(cities_df: DataFrame) -> DataFrame:
     return cleaned_df
 
 def transform_measurements_raw(df_raw: DataFrame) -> DataFrame:
+    clean_local = regexp_replace(col("period.datetimeFrom.local"), r"-\d{2}:\d{2}$", "")
 
     measurements_df = df_raw.select(
         col("sensor_id"),
         col("value"),
-        to_timestamp(col("period.datetimeFrom.local")).alias("period_datetime_local"),
+        to_date(to_timestamp(clean_local)).alias("period_date_local"),
         col("parameter.id").alias("parameter_id"),
         col("parameter.name").alias("parameter_name"),
         col("parameter.units").alias("parameter_units"),
@@ -156,10 +157,7 @@ def transform_measurements_raw(df_raw: DataFrame) -> DataFrame:
 def transform_measurements_agg_daily(df_raw: DataFrame) -> DataFrame:
     measurements_df_day = df_raw.withColumn(
         "day",
-        to_date(to_timestamp(col("period.datetimeFrom.local")))
-    ).withColumn(
-        "day_fr",
-        date_format(col("day"), "dd/MM/yyyy")
+        split(col("period.datetimeFrom.local"), "T")[0]
     )
 
     measurements_df = measurements_df_day.select(
