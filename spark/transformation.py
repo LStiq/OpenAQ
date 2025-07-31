@@ -1,6 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import (
-    col, explode, to_date, lit, to_timestamp, round, avg, min, max, stddev, median, sum, count_distinct, split, when
+    col, explode, to_date, lit, to_timestamp, round, avg, min, max, stddev, median, sum, count_distinct, split, when, regexp_replace
 )
 
 # ------------------------------------------------------------------
@@ -140,10 +140,12 @@ def transform_cities_points(cities_df: DataFrame) -> DataFrame:
 
 def transform_measurements_raw(df_raw: DataFrame) -> DataFrame:
 
+    clean_local = regexp_replace(col("period.datetimeFrom.local"), r"-\d{2}:\d{2}$", "")
+
     measurements_df = df_raw.select(
         col("sensor_id"),
         col("value"),
-        to_timestamp(col("period.datetimeFrom.local")).alias("period_datetime_local"),
+        to_timestamp(clean_local).alias("period_datetime_local")
         col("parameter.id").alias("parameter_id"),
         col("parameter.name").alias("parameter_name"),
         col("parameter.units").alias("parameter_units"),
