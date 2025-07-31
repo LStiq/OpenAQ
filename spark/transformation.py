@@ -145,7 +145,7 @@ def transform_measurements_raw(df_raw: DataFrame) -> DataFrame:
     measurements_df = df_raw.select(
         col("sensor_id"),
         col("value"),
-        to_timestamp(clean_local).alias("period_datetime_local")
+        to_timestamp(clean_local).alias("period_datetime_local"),
         col("parameter.id").alias("parameter_id"),
         col("parameter.name").alias("parameter_name"),
         col("parameter.units").alias("parameter_units"),
